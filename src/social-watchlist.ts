@@ -170,12 +170,84 @@ export function fallbackWatchlist(holdings: Holding[], fingerprint = buildHoldin
     },
     {
       platform: "x",
+      handle: "USTradeRep",
+      displayName: "U.S. Trade Representative",
+      priority: "medium",
+      rationale: "USTR tariff and Section 301 actions can affect China-sensitive AI and semiconductor supply chains.",
+      relatedTickers: holdings.map((holding) => holding.ticker.toUpperCase()),
+      tags: ["policy", "tariff", "section-301"]
+    },
+    {
+      platform: "x",
+      handle: "BISgov",
+      displayName: "Bureau of Industry and Security",
+      priority: "medium",
+      rationale: "BIS export control and Entity List actions can directly affect AI chips, semiconductor equipment, and related supply chains.",
+      relatedTickers: holdings.map((holding) => holding.ticker.toUpperCase()),
+      tags: ["policy", "export-control", "entity-list", "semiconductor"]
+    },
+    {
+      platform: "x",
       handle: "USTreasury",
       displayName: "U.S. Treasury",
       priority: "medium",
       rationale: "Treasury sanctions and macro policy can affect China-sensitive technology holdings.",
       relatedTickers: holdings.map((holding) => holding.ticker.toUpperCase()),
       tags: ["treasury", "sanctions", "macro"]
+    },
+    {
+      platform: "x",
+      handle: "nvidia",
+      displayName: "NVIDIA",
+      priority: "medium",
+      rationale: "NVIDIA demand, supply, and export-control commentary is a central signal for AI infrastructure and upstream suppliers.",
+      relatedTickers: holdings.map((holding) => holding.ticker.toUpperCase()),
+      tags: ["ai", "gpu", "semiconductor", "data-center"]
+    },
+    {
+      platform: "x",
+      handle: "OpenAI",
+      displayName: "OpenAI",
+      priority: "medium",
+      rationale: "OpenAI product, infrastructure, and partner announcements can move AI compute demand expectations.",
+      relatedTickers: holdings.map((holding) => holding.ticker.toUpperCase()),
+      tags: ["ai", "model", "compute"]
+    },
+    {
+      platform: "x",
+      handle: "GoogleDeepMind",
+      displayName: "Google DeepMind",
+      priority: "low",
+      rationale: "Major model and infrastructure announcements from Google can affect AI capex and competitive expectations.",
+      relatedTickers: holdings.map((holding) => holding.ticker.toUpperCase()),
+      tags: ["ai", "model", "cloud"]
+    },
+    {
+      platform: "x",
+      handle: "Microsoft",
+      displayName: "Microsoft",
+      priority: "low",
+      rationale: "Microsoft AI and cloud capex signals can affect data center, networking, and optical supply chains.",
+      relatedTickers: holdings.map((holding) => holding.ticker.toUpperCase()),
+      tags: ["ai", "cloud", "data-center"]
+    },
+    {
+      platform: "x",
+      handle: "ASMLcompany",
+      displayName: "ASML",
+      priority: "low",
+      rationale: "ASML commentary is relevant to semiconductor equipment capacity, China restrictions, and advanced-node supply.",
+      relatedTickers: holdings.map((holding) => holding.ticker.toUpperCase()),
+      tags: ["semiconductor", "equipment", "export-control"]
+    },
+    {
+      platform: "x",
+      handle: "TSMC",
+      displayName: "TSMC",
+      priority: "low",
+      rationale: "TSMC capacity, packaging, and geopolitical commentary can affect AI chip and supplier risk.",
+      relatedTickers: holdings.map((holding) => holding.ticker.toUpperCase()),
+      tags: ["semiconductor", "foundry", "advanced-packaging"]
     }
   ];
   return finalizeWatchlist([...(existing?.accounts || []), ...accounts], holdings, fingerprint, "fallback", existing);

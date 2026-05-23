@@ -71,6 +71,38 @@
       "maxItems": 30
     },
     {
+      "id": "bis-export-controls-press",
+      "name": "BIS Export Controls Press Releases",
+      "enabled": true,
+      "adapter": "html_static",
+      "tier": "fast",
+      "category": "policy",
+      "cadenceMinutes": 10,
+      "url": "https://www.bis.gov/news-updates?type=NodePressRelease&news=&search=&countries=&date=&order=&lSfilter=",
+      "sourceKind": "crawler",
+      "maxItems": 30,
+      "selectors": {
+        "item": "a[href^=\"/press-release/\"]"
+      },
+      "notes": "High-signal official source for export controls, Entity List actions, advanced computing, semiconductor manufacturing, and China restrictions."
+    },
+    {
+      "id": "ustr-press-releases",
+      "name": "USTR Trade Policy Press Releases",
+      "enabled": true,
+      "adapter": "html_static",
+      "tier": "fast",
+      "category": "policy",
+      "cadenceMinutes": 10,
+      "url": "https://ustr.gov/about-us/policy-offices/press-office/press-releases",
+      "sourceKind": "crawler",
+      "maxItems": 30,
+      "selectors": {
+        "item": "a[href*=\"/press-releases/20\"]"
+      },
+      "notes": "Official source for tariff, Section 301, trade negotiation, and China policy updates."
+    },
+    {
       "id": "yahoo-finance-holdings",
       "name": "Yahoo Finance Ticker News",
       "enabled": true,
@@ -99,6 +131,31 @@
       "maxItems": 50
     },
     {
+      "id": "ai-tech-industry-rss",
+      "name": "AI and Semiconductor Industry RSS Bundle",
+      "enabled": true,
+      "adapter": "rss",
+      "tier": "fast",
+      "category": "industry",
+      "cadenceMinutes": 10,
+      "urls": [
+        "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "https://www.theverge.com/rss/index.xml",
+        "https://venturebeat.com/category/ai/feed/",
+        "https://www.technologyreview.com/feed/",
+        "https://semiengineering.com/feed/",
+        "https://www.eetimes.com/feed/",
+        "https://blogs.nvidia.com/feed/",
+        "https://developer.nvidia.com/blog/feed/",
+        "https://blog.google/technology/ai/rss/",
+        "https://openai.com/news/rss.xml",
+        "https://newsroom.intel.com/feed"
+      ],
+      "sourceKind": "rss",
+      "maxItems": 90,
+      "notes": "Expanded industry layer for AI models, AI infrastructure, GPUs, HBM, semiconductor equipment, silicon photonics, optical networking, and data center supply chains."
+    },
+    {
       "id": "holding-risk-news-search",
       "name": "Holding Risk News Search",
       "enabled": true,
@@ -113,7 +170,33 @@
       "queries": [
         "{ticker} stock offering dilution convertible notes guidance cut lawsuit investigation",
         "{ticker} export control tariff sanction China semiconductor AI data center",
-        "\"{name}\" \"{ticker}\" earnings guidance revenue margin"
+        "\"{name}\" \"{ticker}\" earnings guidance revenue margin",
+        "{ticker} HBM GPU accelerator optical transceiver silicon photonics AI infrastructure supply chain"
+      ]
+    },
+    {
+      "id": "ai-supply-chain-news-search",
+      "name": "AI Supply Chain News Search",
+      "enabled": true,
+      "adapter": "search_rss",
+      "tier": "fast",
+      "category": "industry",
+      "cadenceMinutes": 10,
+      "urlTemplate": "https://www.bing.com/news/search?q={query}&format=rss",
+      "perTicker": false,
+      "maxQueries": 12,
+      "maxItems": 30,
+      "queries": [
+        "AI data center capex Nvidia GPU HBM optical transceiver Ethernet InfiniBand",
+        "AI server supply chain accelerator GPU networking switch optics photonics",
+        "HBM memory NAND SSD AI server Micron Samsung SK Hynix supply shortage",
+        "semiconductor equipment ASML Applied Materials Lam Research KLA export controls",
+        "silicon photonics optical networking 800G 1.6T data center hyperscaler",
+        "Ciena Lumentum Coherent Applied Optoelectronics Viavi AI data center demand",
+        "Nvidia Broadcom Marvell AMD AI accelerator networking supply chain",
+        "TSMC advanced packaging CoWoS chiplet AI GPU supply chain",
+        "cloud capex AI infrastructure Microsoft Amazon Google Meta data center",
+        "AI electricity grid power cooling data center capacity risk"
       ]
     },
     {
@@ -133,6 +216,31 @@
         "White House tariff China semiconductor AI export control",
         "Commerce Department BIS export controls AI chip semiconductor",
         "Federal Reserve Powell rates yields growth stocks"
+      ]
+    },
+    {
+      "id": "ai-policy-risk-news-search",
+      "name": "AI and Semiconductor Policy Risk Search",
+      "enabled": true,
+      "adapter": "search_rss",
+      "tier": "fast",
+      "category": "policy",
+      "cadenceMinutes": 10,
+      "urlTemplate": "https://www.bing.com/news/search?q={query}&format=rss",
+      "perTicker": false,
+      "maxQueries": 12,
+      "maxItems": 30,
+      "queries": [
+        "BIS advanced computing semiconductor manufacturing items controls PRC AI chip",
+        "BIS Entity List semiconductor AI data center China export controls",
+        "Federal Register BIS export controls AI chip semiconductor China",
+        "USTR Section 301 China tariffs semiconductor AI data center",
+        "CHIPS Act semiconductor grant AI data center supply chain Department of Commerce",
+        "CFIUS China technology investment AI semiconductor cloud data center",
+        "Japan Netherlands United States semiconductor export controls China ASML",
+        "Taiwan semiconductor AI chip export policy TSMC China",
+        "EU AI Act cloud data center chip export policy",
+        "Trump tariff semiconductor AI chip China export controls"
       ]
     },
     {
@@ -161,7 +269,22 @@
         "POTUS",
         "FederalReserve",
         "USTreasury",
-        "CommerceGov"
+        "CommerceGov",
+        "USTradeRep",
+        "BISgov",
+        "nvidia",
+        "OpenAI",
+        "AnthropicAI",
+        "GoogleDeepMind",
+        "MetaAI",
+        "Microsoft",
+        "awscloud",
+        "Intel",
+        "AMD",
+        "ASMLcompany",
+        "TSMC",
+        "MicronTech",
+        "MarvellTech"
       ],
       "maxItemsPerAccount": 5,
       "lookbackHours": 24,

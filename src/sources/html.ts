@@ -30,11 +30,15 @@ function extractSelectedItems($: CheerioAPI, source: SourceDefinition, html: str
 
   $(selectors.item!).each((index, element) => {
     const item = $(element);
-    const linkElement = selectors.link ? item.find(selectors.link).first() : item.find("a").first();
-    const titleElement = selectors.title ? item.find(selectors.title).first() : linkElement;
+    const linkElement = selectors.link
+      ? (item.is(selectors.link) ? item : item.find(selectors.link).first())
+      : (item.is("a") ? item : item.find("a").first());
+    const titleElement = selectors.title
+      ? (item.is(selectors.title) ? item : item.find(selectors.title).first())
+      : linkElement;
     const title = cleanText(titleElement.text());
     const href = linkElement.attr("href");
-    if (!title || !href || isLowValueTitle(title)) {
+    if (!title || title.length < 12 || !href || isLowValueTitle(title)) {
       return;
     }
     const url = absoluteUrl(href, source.url!);
@@ -130,5 +134,5 @@ function cleanText(value: string): string {
 }
 
 function isLowValueTitle(title: string): boolean {
-  return /^(home|about|contact|search|subscribe|menu|privacy|terms|skip to|read more|learn more)$/i.test(title);
+  return /^(home|about|contact|search|subscribe|menu|privacy|terms|skip to.*|read more|learn more)$/i.test(title);
 }
