@@ -150,7 +150,7 @@
     {
       "id": "x-key-accounts-browser",
       "name": "X Key Accounts Browser Watchlist",
-      "enabled": false,
+      "enabled": true,
       "adapter": "x_browser",
       "tier": "fast",
       "category": "social",
