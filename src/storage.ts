@@ -11,7 +11,7 @@ export interface NewsPoolCleanupSummary {
 }
 
 export async function ensureRuntimeDirs(dataDir: string): Promise<void> {
-  for (const dir of ["raw", "normalized", "candidates", "codex", "codex/failed", "alerts", "alerts/daily", "emails", "emails/failed", "logs", "manual-events"]) {
+  for (const dir of ["raw", "normalized", "candidates", "codex", "codex/failed", "alerts", "alerts/daily", "emails", "emails/failed", "repairs", "logs", "manual-events"]) {
     await ensureDir(path.join(dataDir, dir));
   }
 }
@@ -57,6 +57,12 @@ export async function saveEmailRecord(dataDir: string, eventId: string, record: 
   const baseDir = failed ? path.join("emails", "failed") : "emails";
   const filePath = path.join(dataDir, baseDir, todayLabel(), `${eventId}.json`);
   await writeJson(filePath, record);
+  return filePath;
+}
+
+export async function saveRepairReport(dataDir: string, reportId: string, report: unknown): Promise<string> {
+  const filePath = path.join(dataDir, "repairs", todayLabel(), `${sanitizeFilePart(reportId)}.json`);
+  await writeJson(filePath, report);
   return filePath;
 }
 

@@ -75,6 +75,7 @@ data/risk-monitor/candidates/   规则候选事件
 data/risk-monitor/codex/        Codex 结果或失败记录
 data/risk-monitor/alerts/       本地告警
 data/risk-monitor/emails/       邮件发送记录或失败记录
+data/risk-monitor/repairs/      AI 自动修复记录
 data/risk-monitor/logs/         JSONL 日志
 data/risk-monitor/social-watchlist.json  持仓派生的关键社媒账号列表
 data/risk-monitor/seen.jsonl    去重索引
@@ -212,6 +213,20 @@ slow    通常 60 分钟：Commerce 等低频官方页面
 ```
 
 采集到的事件先落原始记录，再标准化、去重、规则预筛。只有“新增、关联当前持仓、命中规则、达到 AI 介入门槛”的候选事件才调用 Codex。网页爬虫扩大覆盖面，但不会让每条网页都上 AI。
+
+## AI 自动修复
+
+监控主流程出现未捕获异常时，会调用 Codex 尝试自动修复本地程序，使下一轮扫描能继续跑完整工作流。默认配置：
+
+```env
+AI_REPAIR_ENABLED=true
+AI_REPAIR_ALLOW_CODE_EDITS=true
+AI_REPAIR_COOLDOWN_MINUTES=30
+AI_REPAIR_TIMEOUT_MS=600000
+AI_REPAIR_VALIDATION_COMMANDS=npm run build,npm test
+```
+
+修复过程使用 `workspace-write`，但修复提示限制它不要修改 `.env`、`secrets/`、`data/`、`.browser/`、`node_modules/`、`dist/`，也不要执行 `git reset`、强制清理或启动长驻 `npm run monitor`。修复结束后会自动跑配置里的验证命令，并把记录写入 `data/risk-monitor/repairs/`。修复失败不会阻塞主循环，监控会继续等待下一轮扫描。
 
 ## 安全边界
 

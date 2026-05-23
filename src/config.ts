@@ -18,6 +18,13 @@ export interface RiskMonitorConfig {
   dataDir: string;
   newsPoolCleanupEnabled: boolean;
   newsPoolRetentionHours: number;
+  aiRepairEnabled: boolean;
+  aiRepairCooldownMinutes: number;
+  aiRepairRecentLogLines: number;
+  aiRepairSchema: string;
+  aiRepairAllowCodeEdits: boolean;
+  aiRepairTimeoutMs: number;
+  aiRepairValidationCommands: string[];
   sourceRegistryEnabled: boolean;
   sourceRegistryPath: string;
   socialWatchlistEnabled: boolean;
@@ -83,6 +90,13 @@ export function loadConfig(): RiskMonitorConfig {
     dataDir: path.resolve(process.env.RISK_MONITOR_DATA_DIR || "./data/risk-monitor"),
     newsPoolCleanupEnabled: boolValue(process.env.NEWS_POOL_CLEANUP_ENABLED, true),
     newsPoolRetentionHours: numberValue(process.env.NEWS_POOL_RETENTION_HOURS, 24),
+    aiRepairEnabled: boolValue(process.env.AI_REPAIR_ENABLED, true),
+    aiRepairCooldownMinutes: numberValue(process.env.AI_REPAIR_COOLDOWN_MINUTES, 30),
+    aiRepairRecentLogLines: numberValue(process.env.AI_REPAIR_RECENT_LOG_LINES, 80),
+    aiRepairSchema: process.env.AI_REPAIR_SCHEMA || "schemas/ai_repair.schema.json",
+    aiRepairAllowCodeEdits: boolValue(process.env.AI_REPAIR_ALLOW_CODE_EDITS, true),
+    aiRepairTimeoutMs: numberValue(process.env.AI_REPAIR_TIMEOUT_MS, 600000),
+    aiRepairValidationCommands: splitCsv(process.env.AI_REPAIR_VALIDATION_COMMANDS || "npm run build,npm test"),
     sourceRegistryEnabled: boolValue(process.env.SOURCE_REGISTRY_ENABLED, true),
     sourceRegistryPath: path.resolve(process.env.SOURCE_REGISTRY_PATH || "./config/sources.json"),
     socialWatchlistEnabled: boolValue(process.env.SOCIAL_WATCHLIST_ENABLED, true),

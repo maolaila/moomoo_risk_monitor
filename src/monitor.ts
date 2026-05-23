@@ -1,4 +1,5 @@
 import { checkCodex, analyzeWithCodex } from "./codex-analyzer";
+import { AiRepairState, maybeRunAiRepair } from "./ai-repair";
 import { RiskMonitorConfig } from "./config";
 import { dedupeEvents } from "./dedupe";
 import { loadLatestHoldings } from "./holdings";
@@ -134,6 +135,7 @@ export async function runScan(config: RiskMonitorConfig, logger: Logger, status?
 
 export async function runMonitor(config: RiskMonitorConfig, logger: Logger): Promise<void> {
   const scheduler = createSourceSchedulerState();
+  const repairState: AiRepairState = {};
   const status: MonitorStatus = {
     running: true,
     currentTask: "启动中"
@@ -158,8 +160,17 @@ export async function runMonitor(config: RiskMonitorConfig, logger: Logger): Pro
     try {
       await runScan(config, logger, status, scheduler);
     } catch (error) {
+      const failedTask = status.currentTask;
       await logger.error("scan failed", { error: error instanceof Error ? error.message : String(error) });
       console.log(`扫描失败：${error instanceof Error ? error.message : String(error)}`);
+      status.currentTask = "调用 AI 自动修复异常";
+      await maybeRunAiRepair({
+        config,
+        logger,
+        error,
+        currentTask: failedTask,
+        state: repairState
+      });
     }
     status.currentTask = "等待下一轮扫描";
     const elapsed = Date.now() - started;
