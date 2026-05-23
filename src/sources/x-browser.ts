@@ -9,6 +9,7 @@ interface TweetRow {
   text: string;
   url?: string;
   publishedAt?: string;
+  collectionMode: "profile" | "search";
 }
 
 export async function fetchXBrowserEvents(source: SourceDefinition, lookbackHours: number): Promise<RawEvent[]> {
@@ -34,9 +35,8 @@ export async function fetchXBrowserEvents(source: SourceDefinition, lookbackHour
 
     for (let index = 0; index < accounts.length; index += 1) {
       const account = accounts[index];
-      await page.goto(xAccountUrl(account), { waitUntil: "domcontentloaded", timeout: 45000 });
-      await page.waitForTimeout(3000);
-      rows.push(...await scrapeTweets(page, account, source.maxItemsPerAccount || source.maxItems || 5, since));
+      const accountRows = await safeCollectAccountRows(page, account, source.maxItemsPerAccount || source.maxItems || 5, since);
+      rows.push(...accountRows);
       if (index < accounts.length - 1) {
         await sleep(throttleMs);
       }
@@ -57,6 +57,7 @@ export async function fetchXBrowserEvents(source: SourceDefinition, lookbackHour
         category: source.category,
         tier: source.tier,
         account: row.account,
+        collectionMode: row.collectionMode,
         profileDir
       }
     } satisfies RawEvent));
@@ -72,7 +73,36 @@ export function xAccountUrl(account: string): string {
   return `https://x.com/${account.replace(/^@/, "")}`;
 }
 
-async function scrapeTweets(page: Page, account: string, maxItems: number, since: number): Promise<TweetRow[]> {
+export function xSearchUrl(account: string): string {
+  const handle = account.replace(/^@/, "");
+  return `https://x.com/search?q=${encodeURIComponent(`from:${handle}`)}&src=typed_query&f=live`;
+}
+
+async function safeCollectAccountRows(page: Page, account: string, maxItems: number, since: number): Promise<TweetRow[]> {
+  try {
+    await page.goto(xAccountUrl(account), { waitUntil: "domcontentloaded", timeout: 45000 });
+    await page.waitForTimeout(3000);
+    let accountRows = await scrapeTweets(page, account, maxItems, since, "profile");
+    if (accountRows.length === 0 || looksLikeLoginWall(await page.textContent("body").catch(() => ""))) {
+      accountRows = await collectSearchRows(page, account, maxItems, since);
+    }
+    return accountRows;
+  } catch {
+    try {
+      return await collectSearchRows(page, account, maxItems, since);
+    } catch {
+      return [];
+    }
+  }
+}
+
+async function collectSearchRows(page: Page, account: string, maxItems: number, since: number): Promise<TweetRow[]> {
+  await page.goto(xSearchUrl(account), { waitUntil: "domcontentloaded", timeout: 45000 });
+  await page.waitForTimeout(3000);
+  return scrapeTweets(page, account, maxItems, since, "search");
+}
+
+async function scrapeTweets(page: Page, account: string, maxItems: number, since: number, collectionMode: TweetRow["collectionMode"]): Promise<TweetRow[]> {
   return page.$$eval("article", (articles, args) => {
     const rows: TweetRow[] = [];
     for (const article of articles) {
@@ -90,13 +120,23 @@ async function scrapeTweets(page: Page, account: string, maxItems: number, since
           continue;
         }
       }
-      rows.push({ account: args.account, text, url: link, publishedAt: time });
+      rows.push({ account: args.account, text, url: link, publishedAt: time, collectionMode: args.collectionMode });
       if (rows.length >= args.maxItems) {
         break;
       }
     }
     return rows;
-  }, { account, maxItems, since });
+  }, { account, maxItems, since, collectionMode });
+}
+
+function looksLikeLoginWall(text: string | null): boolean {
+  const value = (text || "").toLowerCase();
+  return value.includes("log in to x") ||
+    value.includes("sign in to x") ||
+    value.includes("登录") ||
+    value.includes("登入") ||
+    value.includes("sign up") ||
+    value.includes("create your account");
 }
 
 function dedupeRows(rows: TweetRow[]): TweetRow[] {
