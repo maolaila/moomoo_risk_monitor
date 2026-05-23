@@ -1,0 +1,42 @@
+{
+  "kind": "moomoo_snapshot",
+  "request": {
+    "funds": {
+      "header": {
+        "accID": "should_not_escape"
+      }
+    }
+  },
+  "response": {
+    "funds": {
+      "s2c": {
+        "funds": {
+          "totalAssets": 10000,
+          "marketVal": 4000
+        }
+      }
+    },
+    "positions": {
+      "s2c": {
+        "positionList": [
+          {
+            "code": "SNDK",
+            "name": "SanDisk",
+            "qty": 2,
+            "price": 100,
+            "val": 2000,
+            "averageCostPrice": 90,
+            "unrealizedPL": 20
+          },
+          {
+            "code": "ZERO",
+            "name": "Zero Corp",
+            "qty": 0,
+            "price": 1,
+            "val": 0
+          }
+        ]
+      }
+    }
+  }
+}

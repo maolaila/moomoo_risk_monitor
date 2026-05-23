@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.browser/
+secrets/
+data/
+data/risk-monitor/raw/
+data/risk-monitor/normalized/
+data/risk-monitor/candidates/
+data/risk-monitor/codex/
+data/risk-monitor/alerts/
+data/risk-monitor/logs/
+data/risk-monitor/seen.jsonl
+*.log

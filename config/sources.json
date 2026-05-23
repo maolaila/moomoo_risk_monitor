@@ -1,0 +1,189 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": "white-house-briefings",
+      "name": "White House Briefings & Statements",
+      "enabled": true,
+      "adapter": "rss",
+      "tier": "fast",
+      "category": "official",
+      "cadenceMinutes": 10,
+      "url": "https://www.whitehouse.gov/briefings-statements/feed/",
+      "sourceKind": "rss",
+      "maxItems": 40
+    },
+    {
+      "id": "federal-reserve-press",
+      "name": "Federal Reserve Press Releases",
+      "enabled": true,
+      "adapter": "rss",
+      "tier": "fast",
+      "category": "official",
+      "cadenceMinutes": 10,
+      "url": "https://www.federalreserve.gov/feeds/press_all.xml",
+      "sourceKind": "rss",
+      "maxItems": 30
+    },
+    {
+      "id": "federal-reserve-speeches",
+      "name": "Federal Reserve Speeches",
+      "enabled": true,
+      "adapter": "rss",
+      "tier": "normal",
+      "category": "official",
+      "cadenceMinutes": 30,
+      "url": "https://www.federalreserve.gov/feeds/speeches.xml",
+      "sourceKind": "rss",
+      "maxItems": 30
+    },
+    {
+      "id": "treasury-press-releases",
+      "name": "US Treasury Press Releases",
+      "enabled": true,
+      "adapter": "html_static",
+      "tier": "normal",
+      "category": "official",
+      "cadenceMinutes": 30,
+      "url": "https://home.treasury.gov/news/press-releases",
+      "maxItems": 30
+    },
+    {
+      "id": "ofac-recent-actions",
+      "name": "OFAC Recent Actions",
+      "enabled": true,
+      "adapter": "html_static",
+      "tier": "normal",
+      "category": "official",
+      "cadenceMinutes": 30,
+      "url": "https://ofac.treasury.gov/recent-actions",
+      "maxItems": 30
+    },
+    {
+      "id": "commerce-press-releases",
+      "name": "US Commerce Press Releases",
+      "enabled": true,
+      "adapter": "html_static",
+      "tier": "slow",
+      "category": "official",
+      "cadenceMinutes": 60,
+      "url": "https://www.commerce.gov/news/press-releases",
+      "maxItems": 30
+    },
+    {
+      "id": "yahoo-finance-holdings",
+      "name": "Yahoo Finance Ticker News",
+      "enabled": true,
+      "adapter": "ticker_rss",
+      "tier": "fast",
+      "category": "news",
+      "cadenceMinutes": 10,
+      "urlTemplate": "https://finance.yahoo.com/rss/headline?s={ticker}",
+      "sourceKind": "rss",
+      "maxItems": 20
+    },
+    {
+      "id": "market-news-rss",
+      "name": "Market News RSS Bundle",
+      "enabled": true,
+      "adapter": "rss",
+      "tier": "normal",
+      "category": "news",
+      "cadenceMinutes": 30,
+      "urls": [
+        "https://seekingalpha.com/market_currents.xml",
+        "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+        "https://www.marketwatch.com/rss/topstories"
+      ],
+      "sourceKind": "rss",
+      "maxItems": 50
+    },
+    {
+      "id": "holding-risk-news-search",
+      "name": "Holding Risk News Search",
+      "enabled": true,
+      "adapter": "search_rss",
+      "tier": "fast",
+      "category": "search",
+      "cadenceMinutes": 10,
+      "urlTemplate": "https://www.bing.com/news/search?q={query}&format=rss",
+      "perTicker": true,
+      "maxQueries": 24,
+      "maxItems": 20,
+      "queries": [
+        "{ticker} stock offering dilution convertible notes guidance cut lawsuit investigation",
+        "{ticker} export control tariff sanction China semiconductor AI data center",
+        "\"{name}\" \"{ticker}\" earnings guidance revenue margin"
+      ]
+    },
+    {
+      "id": "policy-risk-news-search",
+      "name": "Policy Risk News Search",
+      "enabled": true,
+      "adapter": "search_rss",
+      "tier": "fast",
+      "category": "policy",
+      "cadenceMinutes": 10,
+      "urlTemplate": "https://www.bing.com/news/search?q={query}&format=rss",
+      "perTicker": false,
+      "maxQueries": 10,
+      "maxItems": 25,
+      "queries": [
+        "US export controls semiconductor AI data center China tariff sanctions",
+        "White House tariff China semiconductor AI export control",
+        "Commerce Department BIS export controls AI chip semiconductor",
+        "Federal Reserve Powell rates yields growth stocks"
+      ]
+    },
+    {
+      "id": "trump-truth-social",
+      "name": "Trump Truth Social",
+      "enabled": true,
+      "adapter": "rss",
+      "tier": "fast",
+      "category": "social",
+      "cadenceMinutes": 10,
+      "url": "https://truthsocial.com/@realDonaldTrump.rss",
+      "sourceKind": "social",
+      "maxItems": 40
+    },
+    {
+      "id": "x-key-accounts-browser",
+      "name": "X Key Accounts Browser Watchlist",
+      "enabled": false,
+      "adapter": "x_browser",
+      "tier": "fast",
+      "category": "social",
+      "cadenceMinutes": 30,
+      "accounts": [
+        "realDonaldTrump",
+        "WhiteHouse",
+        "POTUS",
+        "FederalReserve",
+        "USTreasury",
+        "CommerceGov"
+      ],
+      "maxItemsPerAccount": 5,
+      "lookbackHours": 24,
+      "throttleMs": 10000,
+      "profileDir": "./.browser/x-profile",
+      "headless": false,
+      "useGeneratedWatchlist": true,
+      "sourceKind": "social",
+      "notes": "Optional logged-in browser collection. Start once with this source enabled, log in to X in the opened Chrome profile, then keep the monitor running. Do not store X passwords in this project."
+    },
+    {
+      "id": "x-official-watchlist-placeholder",
+      "name": "X/Twitter Official Watchlist Placeholder",
+      "enabled": false,
+      "adapter": "browser_dynamic",
+      "tier": "fast",
+      "category": "social",
+      "cadenceMinutes": 10,
+      "url": "https://x.com/realDonaldTrump",
+      "sourceKind": "social",
+      "maxItems": 20,
+      "notes": "Disabled by default because X often requires login or API access. Enable only when a logged-in browser/API proxy is available."
+    }
+  ]
+}
