@@ -203,13 +203,11 @@ function buildRules(event: NormalizedEvent, holdings: Holding[]): RuleMatch[] {
   for (const holding of holdings) {
     const portfolioWeight = holding.portfolioWeight || 0;
     const stockBookWeight = holding.stockBookWeight || 0;
-    if (portfolioWeight >= 0.15 || stockBookWeight >= 0.35) {
+    if (rules.length > 0 && hasEscalatableRisk(rules) && (portfolioWeight >= 0.15 || stockBookWeight >= 0.35)) {
       rules.push(rule("exposure.force_high", "高仓位暴露", "HIGH", "unknown", `${holding.ticker} 仓位权重较高`, 1));
-    } else if (portfolioWeight >= 0.10 || stockBookWeight >= 0.25) {
+    } else if (rules.length > 0 && hasEscalatableRisk(rules) && (portfolioWeight >= 0.10 || stockBookWeight >= 0.25)) {
       const existing = maxSeverity(rules.map((item) => item.severity));
-      if (rules.length > 0) {
-        rules.push(rule("exposure.escalate", "仓位暴露升级", escalate(existing), "unknown", `${holding.ticker} 仓位较高，风险等级上调`, 1));
-      }
+      rules.push(rule("exposure.escalate", "仓位暴露升级", escalate(existing), "unknown", `${holding.ticker} 仓位较高，风险等级上调`, 1));
     }
   }
 
@@ -226,10 +224,36 @@ function shouldInvoke(event: NormalizedEvent, rules: RuleMatch[], holdings: Hold
   if (rules.some((item) => item.ruleId.startsWith("bearish."))) {
     return true;
   }
-  if (rules.some((item) => item.ruleId.includes("sector") || item.ruleId.includes("social"))) {
+  if (hasEscalatableRisk(rules) && rules.some((item) => item.ruleId.includes("sector") || item.ruleId.includes("social"))) {
     return holdings.some((holding) => (holding.portfolioWeight || 0) >= 0.10 || (holding.stockBookWeight || 0) >= 0.25);
   }
   return false;
+}
+
+function hasEscalatableRisk(rules: RuleMatch[]): boolean {
+  return rules.some((item) =>
+    item.ruleId.startsWith("bearish.") ||
+    item.ruleId.startsWith("sec.") ||
+    item.ruleId === "social.policy_shock" ||
+    isPolicyRiskRule(item.ruleId)
+  );
+}
+
+function isPolicyRiskRule(ruleId: string): boolean {
+  return [
+    "sector.export_control",
+    "sector.export_controls",
+    "sector.sanctions",
+    "sector.tariff",
+    "sector.tariffs",
+    "sector.white_house",
+    "sector.executive_order",
+    "sector.commerce_department",
+    "sector.bureau_of_industry_and_security",
+    "sector.bis",
+    "sector.china_restrictions",
+    "sector.trade_restrictions"
+  ].includes(ruleId);
 }
 
 function secDirection(formType: string): Direction {
