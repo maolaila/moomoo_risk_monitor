@@ -11,7 +11,7 @@ import { fetchAllSources } from "./source-runner";
 import { createSourceSchedulerState } from "./source-registry";
 import { SourceSchedulerState } from "./source-types";
 import { loadOrUpdateSocialWatchlist } from "./social-watchlist";
-import { ensureRuntimeDirs, saveCandidate, saveCodexFailure, saveCodexResult, saveNormalizedEvent, saveRawEvent } from "./storage";
+import { cleanupNewsPool, ensureRuntimeDirs, saveCandidate, saveCodexFailure, saveCodexResult, saveNormalizedEvent, saveRawEvent } from "./storage";
 import { MonitorStatus, ScanSummary } from "./types";
 import { nowIso, sleep } from "./utils";
 
@@ -24,6 +24,14 @@ export async function runScan(config: RiskMonitorConfig, logger: Logger, status?
 
   await setTask(status, "准备运行目录", logger);
   await ensureRuntimeDirs(config.dataDir);
+  if (config.newsPoolCleanupEnabled) {
+    await setTask(status, "清理 24 小时以前的新闻池", logger);
+    const cleanup = await cleanupNewsPool(config.dataDir, config.newsPoolRetentionHours);
+    if (cleanup.deletedFiles > 0 || cleanup.deletedDirs > 0) {
+      console.log(`新闻池清理完成：删除文件 ${cleanup.deletedFiles}，删除空目录 ${cleanup.deletedDirs}，保留 ${cleanup.retentionHours} 小时`);
+      await logger.info("news pool cleanup complete", cleanup as unknown as Record<string, unknown>);
+    }
+  }
 
   await setTask(status, "读取最新持仓快照", logger);
   const holdingsResult = await loadLatestHoldings(config.snapshotDir);

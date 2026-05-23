@@ -16,6 +16,8 @@ export interface RiskMonitorConfig {
   alertEmailTo: string;
   alertEmailFrom: string;
   dataDir: string;
+  newsPoolCleanupEnabled: boolean;
+  newsPoolRetentionHours: number;
   sourceRegistryEnabled: boolean;
   sourceRegistryPath: string;
   socialWatchlistEnabled: boolean;
@@ -79,6 +81,8 @@ export function loadConfig(): RiskMonitorConfig {
     alertEmailTo: process.env.ALERT_EMAIL_TO || "maolaila1+moomoo-risk-monitor@gmail.com",
     alertEmailFrom: process.env.ALERT_EMAIL_FROM || "Moomoo Risk Monitor <maolaila2@gmail.com>",
     dataDir: path.resolve(process.env.RISK_MONITOR_DATA_DIR || "./data/risk-monitor"),
+    newsPoolCleanupEnabled: boolValue(process.env.NEWS_POOL_CLEANUP_ENABLED, true),
+    newsPoolRetentionHours: numberValue(process.env.NEWS_POOL_RETENTION_HOURS, 24),
     sourceRegistryEnabled: boolValue(process.env.SOURCE_REGISTRY_ENABLED, true),
     sourceRegistryPath: path.resolve(process.env.SOURCE_REGISTRY_PATH || "./config/sources.json"),
     socialWatchlistEnabled: boolValue(process.env.SOCIAL_WATCHLIST_ENABLED, true),

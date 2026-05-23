@@ -87,9 +87,9 @@
       "name": "Market News RSS Bundle",
       "enabled": true,
       "adapter": "rss",
-      "tier": "normal",
+      "tier": "fast",
       "category": "news",
-      "cadenceMinutes": 30,
+      "cadenceMinutes": 10,
       "urls": [
         "https://seekingalpha.com/market_currents.xml",
         "https://www.cnbc.com/id/100003114/device/rss/rss.html",

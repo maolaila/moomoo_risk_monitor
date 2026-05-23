@@ -80,6 +80,15 @@ data/risk-monitor/social-watchlist.json  持仓派生的关键社媒账号列表
 data/risk-monitor/seen.jsonl    去重索引
 ```
 
+新闻池自动清理默认开启：
+
+```env
+NEWS_POOL_CLEANUP_ENABLED=true
+NEWS_POOL_RETENTION_HOURS=24
+```
+
+每轮扫描开始时会删除 `raw/normalized/candidates` 中修改时间超过 24 小时的临时事件文件，避免本地新闻数据长期堆积。`alerts/codex/emails/logs/seen.jsonl` 不会被清理，用于告警审计、AI 结果追溯和去重。
+
 ## 邮件告警
 
 默认配置：
@@ -195,8 +204,8 @@ npm run update-social-watchlist
 监控模式每 10 分钟进入一轮扫描，但不是每个来源都每轮采集。`config/sources.json` 里的 `cadenceMinutes` 控制来源分频：
 
 ```text
-fast    通常 10 分钟：SEC、政策 RSS、持仓新闻、关键社交源、风险搜索
-normal  通常 30 分钟：普通财经新闻、Fed speeches、Treasury/OFAC 页面
+fast    通常 10 分钟：SEC、政策 RSS、持仓新闻、普通财经新闻、关键社交源、风险搜索
+normal  通常 30 分钟：Fed speeches、Treasury/OFAC 页面
 slow    通常 60 分钟：Commerce 等低频官方页面
 ```
 
