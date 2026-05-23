@@ -154,7 +154,7 @@
       "adapter": "x_browser",
       "tier": "fast",
       "category": "social",
-      "cadenceMinutes": 30,
+      "cadenceMinutes": 10,
       "accounts": [
         "realDonaldTrump",
         "WhiteHouse",
