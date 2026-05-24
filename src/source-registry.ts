@@ -36,7 +36,8 @@ export async function fetchRegistrySources(options: {
     }
     const started = Date.now();
     try {
-      const batch = await fetchSource(source, options.config, options.holdings, options.socialWatchlist);
+      const result = await fetchSourceWithBrowserFallback(source, options.config, options.holdings, options.socialWatchlist);
+      const batch = result.events;
       events.push(...batch);
       await options.logger.info("source fetched", {
         sourceId: source.id,
@@ -44,6 +45,10 @@ export async function fetchRegistrySources(options: {
         adapter: source.adapter,
         tier: source.tier,
         count: batch.length,
+        browserFallbackUsed: result.browserFallbackUsed,
+        primaryCount: result.browserFallbackUsed ? result.primaryCount : undefined,
+        primaryError: result.primaryError,
+        browserFallbackError: result.browserFallbackError,
         elapsedMs: Date.now() - started
       });
     } catch (error) {
@@ -62,6 +67,14 @@ export async function fetchRegistrySources(options: {
   }
 
   return events;
+}
+
+interface FetchSourceResult {
+  events: RawEvent[];
+  browserFallbackUsed: boolean;
+  primaryCount?: number;
+  primaryError?: string;
+  browserFallbackError?: string;
 }
 
 function enabledByGlobalSwitch(source: SourceDefinition, config: RiskMonitorConfig): boolean {
@@ -88,6 +101,48 @@ export async function loadSourceRegistry(filePath: string): Promise<SourceRegist
   const registry = await readJsonFile<SourceRegistry>(resolved);
   validateRegistry(registry, resolved);
   return registry;
+}
+
+async function fetchSourceWithBrowserFallback(source: SourceDefinition, config: RiskMonitorConfig, holdings: Holding[], socialWatchlist?: SocialWatchlist): Promise<FetchSourceResult> {
+  let primaryEvents: RawEvent[] = [];
+  let primaryError: string | undefined;
+
+  try {
+    primaryEvents = await fetchSource(source, config, holdings, socialWatchlist);
+  } catch (error) {
+    primaryError = error instanceof Error ? error.message : String(error);
+  }
+
+  if (!shouldUseBrowserFallback(source, primaryEvents.length, primaryError)) {
+    if (primaryError) {
+      throw new Error(primaryError);
+    }
+    return {
+      events: primaryEvents,
+      browserFallbackUsed: false
+    };
+  }
+
+  try {
+    const fallbackEvents = await fetchBrowserFallbackEvents(source, config);
+    return {
+      events: fallbackEvents,
+      browserFallbackUsed: true,
+      primaryCount: primaryEvents.length,
+      primaryError
+    };
+  } catch (error) {
+    const browserFallbackError = error instanceof Error ? error.message : String(error);
+    if (primaryError) {
+      throw new Error(`Primary source failed: ${primaryError}; browser fallback failed: ${browserFallbackError}`);
+    }
+    return {
+      events: primaryEvents,
+      browserFallbackUsed: false,
+      primaryCount: primaryEvents.length,
+      browserFallbackError
+    };
+  }
 }
 
 async function fetchSource(source: SourceDefinition, config: RiskMonitorConfig, holdings: Holding[], socialWatchlist?: SocialWatchlist): Promise<RawEvent[]> {
@@ -122,8 +177,71 @@ async function fetchSource(source: SourceDefinition, config: RiskMonitorConfig, 
   return [];
 }
 
+function shouldUseBrowserFallback(source: SourceDefinition, primaryCount: number, primaryError: string | undefined): boolean {
+  if (!hasBrowserFallback(source)) {
+    return false;
+  }
+  if (primaryError) {
+    return true;
+  }
+  return primaryCount === 0 && (source.browserFallback?.onEmpty ?? true);
+}
+
+function hasBrowserFallback(source: SourceDefinition): boolean {
+  const fallback = source.browserFallback;
+  if (!fallback || fallback.enabled === false) {
+    return false;
+  }
+  return Boolean(fallback.url || fallback.urls?.length || source.url);
+}
+
+async function fetchBrowserFallbackEvents(source: SourceDefinition, config: RiskMonitorConfig): Promise<RawEvent[]> {
+  const fallback = source.browserFallback;
+  if (!fallback) {
+    return [];
+  }
+  const urls = fallback.urls?.length ? fallback.urls : [fallback.url || source.url].filter(Boolean) as string[];
+  const lookbackHours = source.lookbackHours ?? config.newsLookbackHours;
+  const batches: RawEvent[][] = [];
+  for (const url of urls) {
+    const fallbackSource: SourceDefinition = {
+      ...source,
+      adapter: "browser_dynamic",
+      url,
+      selectors: fallback.selectors || source.selectors,
+      headless: fallback.headless ?? source.headless,
+      profileDir: fallback.profileDir || source.profileDir,
+      waitMs: fallback.waitMs ?? source.waitMs,
+      maxItems: fallback.maxItems ?? source.maxItems,
+      sourceKind: source.sourceKind === "social" ? "social" : "crawler"
+    };
+    const batch = await fetchBrowserDynamicEvents(fallbackSource, lookbackHours);
+    batches.push(batch.map((event) => ({
+      ...event,
+      metadata: {
+        ...event.metadata,
+        browserFallback: true,
+        primaryAdapter: source.adapter
+      }
+    })));
+  }
+  return dedupeEventsByUrl(batches.flat()).slice(0, fallback.maxItems ?? source.maxItems ?? 30);
+}
+
 function uniqueAccounts(accounts: string[]): string[] {
   return [...new Set(accounts.map((account) => account.trim()).filter(Boolean))];
+}
+
+function dedupeEventsByUrl(events: RawEvent[]): RawEvent[] {
+  const seen = new Set<string>();
+  return events.filter((event) => {
+    const key = event.url || event.title;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 }
 
 function isDue(source: SourceDefinition, scheduler: SourceSchedulerState | undefined, now: number): boolean {

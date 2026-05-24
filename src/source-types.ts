@@ -10,6 +10,18 @@ export interface HtmlSelectors {
   date?: string;
 }
 
+export interface BrowserFallbackConfig {
+  enabled?: boolean;
+  url?: string;
+  urls?: string[];
+  onEmpty?: boolean;
+  headless?: boolean;
+  profileDir?: string;
+  waitMs?: number;
+  maxItems?: number;
+  selectors?: HtmlSelectors;
+}
+
 export interface SourceDefinition {
   id: string;
   name: string;
@@ -29,10 +41,12 @@ export interface SourceDefinition {
   maxItemsPerAccount?: number;
   lookbackHours?: number;
   throttleMs?: number;
+  waitMs?: number;
   profileDir?: string;
   headless?: boolean;
   useGeneratedWatchlist?: boolean;
   selectors?: HtmlSelectors;
+  browserFallback?: BrowserFallbackConfig;
   sourceKind?: "rss" | "social" | "crawler" | "search";
   userAgent?: string;
   notes?: string;

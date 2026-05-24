@@ -11,7 +11,17 @@
       "cadenceMinutes": 10,
       "url": "https://www.whitehouse.gov/briefings-statements/feed/",
       "sourceKind": "rss",
-      "maxItems": 40
+      "maxItems": 40,
+      "browserFallback": {
+        "url": "https://www.whitehouse.gov/briefings-statements/",
+        "onEmpty": true,
+        "headless": true,
+        "waitMs": 2500,
+        "maxItems": 40,
+        "selectors": {
+          "item": "a[href*=\"/briefings-statements/\"]"
+        }
+      }
     },
     {
       "id": "federal-reserve-press",
@@ -23,7 +33,17 @@
       "cadenceMinutes": 10,
       "url": "https://www.federalreserve.gov/feeds/press_all.xml",
       "sourceKind": "rss",
-      "maxItems": 30
+      "maxItems": 30,
+      "browserFallback": {
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases.htm",
+        "onEmpty": true,
+        "headless": true,
+        "waitMs": 2500,
+        "maxItems": 30,
+        "selectors": {
+          "item": "a[href*=\"/newsevents/pressreleases/\"]"
+        }
+      }
     },
     {
       "id": "federal-reserve-speeches",
@@ -35,7 +55,17 @@
       "cadenceMinutes": 30,
       "url": "https://www.federalreserve.gov/feeds/speeches.xml",
       "sourceKind": "rss",
-      "maxItems": 30
+      "maxItems": 30,
+      "browserFallback": {
+        "url": "https://www.federalreserve.gov/newsevents/speeches.htm",
+        "onEmpty": true,
+        "headless": true,
+        "waitMs": 2500,
+        "maxItems": 30,
+        "selectors": {
+          "item": "a[href*=\"/newsevents/speech/\"]"
+        }
+      }
     },
     {
       "id": "treasury-press-releases",
@@ -46,7 +76,17 @@
       "category": "official",
       "cadenceMinutes": 30,
       "url": "https://home.treasury.gov/news/press-releases",
-      "maxItems": 30
+      "maxItems": 30,
+      "browserFallback": {
+        "url": "https://home.treasury.gov/news/press-releases",
+        "onEmpty": true,
+        "headless": true,
+        "waitMs": 2500,
+        "maxItems": 30,
+        "selectors": {
+          "item": "a[href*=\"/news/press-releases/\"]"
+        }
+      }
     },
     {
       "id": "ofac-recent-actions",
@@ -57,7 +97,14 @@
       "category": "official",
       "cadenceMinutes": 30,
       "url": "https://ofac.treasury.gov/recent-actions",
-      "maxItems": 30
+      "maxItems": 30,
+      "browserFallback": {
+        "url": "https://ofac.treasury.gov/recent-actions",
+        "onEmpty": true,
+        "headless": true,
+        "waitMs": 2500,
+        "maxItems": 30
+      }
     },
     {
       "id": "commerce-press-releases",
@@ -68,7 +115,25 @@
       "category": "official",
       "cadenceMinutes": 60,
       "url": "https://www.commerce.gov/news/press-releases",
-      "maxItems": 30
+      "maxItems": 30,
+      "selectors": {
+        "item": "a[href*=\"/news/press-releases/\"]"
+      },
+      "browserFallback": {
+        "urls": [
+          "https://www.commerce.gov/news/press-release",
+          "https://www.commerce.gov/news/press-releases"
+        ],
+        "onEmpty": true,
+        "headless": false,
+        "profileDir": "./.browser/news-profile",
+        "waitMs": 8000,
+        "maxItems": 30,
+        "selectors": {
+          "item": "a[href*=\"/news/press-releases/\"]"
+        }
+      },
+      "notes": "Commerce.gov may return 403 to plain HTTP fetches. If static fetch fails or returns no items, open Chrome with a persistent local profile and crawl the page links."
     },
     {
       "id": "bis-export-controls-press",
@@ -83,6 +148,16 @@
       "maxItems": 30,
       "selectors": {
         "item": "a[href^=\"/press-release/\"]"
+      },
+      "browserFallback": {
+        "url": "https://www.bis.gov/news-updates?type=NodePressRelease&news=&search=&countries=&date=&order=&lSfilter=",
+        "onEmpty": true,
+        "headless": true,
+        "waitMs": 2500,
+        "maxItems": 30,
+        "selectors": {
+          "item": "a[href^=\"/press-release/\"]"
+        }
       },
       "notes": "High-signal official source for export controls, Entity List actions, advanced computing, semiconductor manufacturing, and China restrictions."
     },
@@ -99,6 +174,16 @@
       "maxItems": 30,
       "selectors": {
         "item": "a[href*=\"/press-releases/20\"]"
+      },
+      "browserFallback": {
+        "url": "https://ustr.gov/about-us/policy-offices/press-office/press-releases",
+        "onEmpty": true,
+        "headless": true,
+        "waitMs": 2500,
+        "maxItems": 30,
+        "selectors": {
+          "item": "a[href*=\"/press-releases/20\"]"
+        }
       },
       "notes": "Official source for tariff, Section 301, trade negotiation, and China policy updates."
     },

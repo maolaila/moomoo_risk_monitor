@@ -119,7 +119,7 @@ SMTP_PASS_FILE=./secrets/gmail_app_password.txt
 - Federal Reserve speeches RSS
 - US Treasury press releases HTML
 - OFAC recent actions HTML
-- US Commerce press releases HTML
+- US Commerce press releases HTML，失败或返回空时自动打开 Chrome 兜底抓取
 - BIS export controls press releases HTML
 - USTR trade policy press releases HTML
 
@@ -165,6 +165,30 @@ enabled          是否启用
 ```
 
 `browser_dynamic` 用 `playwright-core` 调本机 Chrome，适合动态页面兜底。通用占位源默认关闭，因为 X/Twitter 等平台经常需要登录或 API 权限。若你有可信 RSS 转换源、RSSHub、内部抓取服务或官方 API 代理，优先用 RSS/API 方式接入。
+
+每个来源都可以配置 `browserFallback`。主采集方式为 RSS/API/普通 HTML 时，如果请求报错，或返回 0 条并且 `onEmpty=true`，监控会自动改用本机 Chrome 打开网页抓取链接。Commerce.gov 已启用这个兜底：
+
+```json
+{
+  "id": "commerce-press-releases",
+  "adapter": "html_static",
+  "url": "https://www.commerce.gov/news/press-releases",
+  "browserFallback": {
+    "urls": [
+      "https://www.commerce.gov/news/press-release",
+      "https://www.commerce.gov/news/press-releases"
+    ],
+    "headless": false,
+    "profileDir": "./.browser/news-profile",
+    "waitMs": 8000,
+    "selectors": {
+      "item": "a[href*=\"/news/press-releases/\"]"
+    }
+  }
+}
+```
+
+`headless=false` 会打开可见 Chrome。遇到 Cloudflare、政府站点人机验证或 Cookie 弹窗时，你可以在这个窗口里处理一次；`.browser/news-profile` 会保存本机浏览器状态，后续扫描复用。兜底失败只影响当前来源，不会阻塞其他 RSS、政策源、X、AI 分析或邮件告警。
 
 X/Twitter 已启用 `x_browser` adapter 作为第二条路径。它不会保存账号密码，只复用本机 Chrome profile。默认配置在 `config/sources.json`：
 

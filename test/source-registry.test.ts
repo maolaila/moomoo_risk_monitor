@@ -20,6 +20,13 @@ describe("source registry", () => {
     expect(registry.sources.some((source) => source.id === "ai-policy-risk-news-search" && source.category === "policy")).toBe(true);
     expect(registry.sources.some((source) => source.id === "bis-export-controls-press")).toBe(true);
     expect(registry.sources.some((source) => source.id === "ustr-press-releases")).toBe(true);
+    const commerceSource = registry.sources.find((source) => source.id === "commerce-press-releases");
+    expect(commerceSource?.browserFallback?.urls).toContain("https://www.commerce.gov/news/press-release");
+    expect(commerceSource?.browserFallback?.headless).toBe(false);
+    expect(commerceSource?.browserFallback?.profileDir).toBe("./.browser/news-profile");
+    expect(registry.sources
+      .filter((source) => ["white-house-briefings", "federal-reserve-press", "bis-export-controls-press", "ustr-press-releases"].includes(source.id))
+      .every((source) => Boolean(source.browserFallback))).toBe(true);
     const xSource = registry.sources.find((source) => source.id === "x-key-accounts-browser");
     expect(xSource?.accounts).toContain("BISgov");
     expect(xSource?.accounts).toContain("OpenAI");
