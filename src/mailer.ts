@@ -24,21 +24,25 @@ export interface EmailSendResult {
 
 export function buildRiskEmailPayload(config: RiskMonitorConfig, candidate: CandidateEvent, analysis: CodexAnalysisResult): RiskEmailPayload {
   const ticker = analysis.ticker || candidate.event.matchedTickers[0] || "UNKNOWN";
-  const subject = `[Moomoo 风控][${analysis.severity}][${ticker}] ${oneLine(analysis.one_sentence_summary, 120)}`;
+  const severity = severityZh(analysis.severity);
+  const direction = directionZh(analysis.direction);
+  const subject = `[Moomoo 风控][${severity}][${ticker}] ${oneLine(analysis.one_sentence_summary, 120)}`;
   const suggestedAction = suggestedActionZh(analysis.suggested_action);
   const lines = [
     `标的：${ticker}`,
-    `级别：${analysis.severity}`,
-    `方向：${analysis.direction}`,
-    `置信度：${analysis.confidence}`,
-    `建议动作：${suggestedAction}`,
+    `风险级别：${severity}`,
+    `AI 判断方向：${direction}`,
+    `AI 置信度：${formatConfidence(analysis.confidence)}`,
+    `AI 建议处理：${suggestedAction}`,
     "",
-    `一句话：${analysis.one_sentence_summary}`,
+    "AI 综合结论：",
+    analysis.one_sentence_summary || "未提供",
     "",
+    "AI 给出的理由和分析：",
     "为什么重要：",
     analysis.why_it_matters || "未提供",
     "",
-    "持仓影响：",
+    "对持仓的影响：",
     analysis.portfolio_impact || "未提供",
     "",
     "建议处理：",
@@ -57,7 +61,7 @@ export function buildRiskEmailPayload(config: RiskMonitorConfig, candidate: Cand
     analysis.missing_data.length ? analysis.missing_data.map((item) => `- ${item}`).join("\n") : "- 无",
     "",
     "原始事件：",
-    `- 来源：${candidate.event.source}`,
+    `- 来源：${sourceZh(candidate.event.source, candidate.event.metadata?.sourceName)}`,
     `- 标题：${candidate.event.title}`,
     `- 时间：${candidate.event.publishedAt || candidate.event.detectedAt}`,
     candidate.event.url ? `- URL：${candidate.event.url}` : "- URL：无",
@@ -180,7 +184,10 @@ function formatRules(candidate: CandidateEvent): string {
   if (!candidate.rules.length) {
     return "- 无";
   }
-  return candidate.rules.map((rule) => `- [${rule.severity}] ${rule.label}：${rule.reason}`).join("\n");
+  return candidate.rules.map((rule) => {
+    const direction = directionZh(rule.directionHint);
+    return `- [${severityZh(rule.severity)} / ${direction}] ${rule.label}：${rule.reason}；规则置信度 ${formatConfidence(rule.confidence)}`;
+  }).join("\n");
 }
 
 function formatEvidence(analysis: CodexAnalysisResult): string {
@@ -189,7 +196,7 @@ function formatEvidence(analysis: CodexAnalysisResult): string {
   }
   return analysis.evidence.map((item) => {
     const suffix = item.url ? ` (${item.url})` : "";
-    return `- ${item.source}: ${item.claim}${suffix}`;
+    return `- ${sourceZh(item.source)}：${item.claim}${suffix}`;
   }).join("\n");
 }
 
@@ -207,4 +214,52 @@ function suggestedActionZh(action: CodexAnalysisResult["suggested_action"]): str
     urgent_manual_review: "风险很高，紧急考虑卖出"
   };
   return labels[action] || "人工复核";
+}
+
+function severityZh(severity: CodexAnalysisResult["severity"]): string {
+  const labels: Record<CodexAnalysisResult["severity"], string> = {
+    LOW: "低风险",
+    MEDIUM: "中等风险",
+    HIGH: "高风险",
+    CRITICAL: "极高风险"
+  };
+  return labels[severity] || "未知风险";
+}
+
+function directionZh(direction: CodexAnalysisResult["direction"]): string {
+  const labels: Record<CodexAnalysisResult["direction"], string> = {
+    bullish: "偏利好",
+    bearish: "偏利空",
+    neutral: "中性",
+    mixed: "多空混合",
+    unknown: "方向不明确"
+  };
+  return labels[direction] || "方向不明确";
+}
+
+function formatConfidence(confidence: number): string {
+  if (!Number.isFinite(confidence)) {
+    return "未提供";
+  }
+  return `${Math.round(Math.max(0, Math.min(1, confidence)) * 100)}%`;
+}
+
+function sourceZh(source: string, sourceName?: unknown): string {
+  if (typeof sourceName === "string" && sourceName.trim()) {
+    return sourceName.trim();
+  }
+  const normalized = source.toLowerCase();
+  const labels: Record<string, string> = {
+    sec: "SEC 文件",
+    rss: "新闻 RSS",
+    social: "社交媒体",
+    crawler: "网页爬虫",
+    search: "新闻搜索",
+    newsapi: "NewsAPI 新闻",
+    alphavantage: "Alpha Vantage 数据",
+    price: "价格数据",
+    manual: "手动事件",
+    local: "本地测试"
+  };
+  return labels[normalized] || source;
 }

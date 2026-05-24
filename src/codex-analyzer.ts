@@ -32,7 +32,7 @@ export function buildCodexArgs(config: RiskMonitorConfig, outputSchema = config.
 export async function analyzeWithCodex(config: RiskMonitorConfig, candidate: CandidateEvent): Promise<CodexAnalysisResult> {
   const prompt = await fs.readFile(path.resolve("prompts", "risk-analysis.md"), "utf8");
   const payload = {
-    system_task: "Analyze whether this event is bullish, bearish, neutral, mixed, or unknown for the user's current holding. Return JSON only.",
+    system_task: "Analyze whether this event is bullish, bearish, neutral, mixed, or unknown for the user's current holding. Return JSON only. All natural-language fields must be written in Simplified Chinese.",
     prompt,
     account_context: {
       strategy: "QuantGT-related US technology growth portfolio",
@@ -55,7 +55,12 @@ export async function analyzeWithCodex(config: RiskMonitorConfig, candidate: Can
       severity: "LOW | MEDIUM | HIGH | CRITICAL",
       confidence: "0 to 1",
       should_email: "boolean",
-      suggested_action: "ignore | watch | manual_review | reduce_risk_candidate | urgent_manual_review"
+      one_sentence_summary: "Chinese one-sentence conclusion",
+      why_it_matters: "Chinese reason and analysis",
+      portfolio_impact: "Chinese portfolio impact analysis",
+      suggested_action: "ignore | watch | manual_review | reduce_risk_candidate | urgent_manual_review",
+      evidence: "Chinese evidence claims only",
+      missing_data: "Chinese missing data list"
     }
   };
 

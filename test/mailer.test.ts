@@ -9,12 +9,20 @@ describe("mailer", () => {
 
     expect(payload.to).toBe("maolaila1+moomoo-risk-monitor@gmail.com");
     expect(payload.from).toContain("maolaila2@gmail.com");
-    expect(payload.subject).toContain("[HIGH]");
+    expect(payload.subject).toContain("[高风险]");
     expect(payload.subject).toContain("[SNDK]");
     expect(payload.text).toContain("标的：SNDK");
+    expect(payload.text).toContain("风险级别：高风险");
+    expect(payload.text).toContain("AI 判断方向：偏利空");
+    expect(payload.text).toContain("AI 置信度：83%");
+    expect(payload.text).toContain("AI 给出的理由和分析：");
     expect(payload.text).toContain("建议处理：\n人工复核后再决定");
-    expect(payload.text).toContain("Convertible financing");
+    expect(payload.text).toContain("可转债融资可能带来稀释压力");
+    expect(payload.text).toContain("潜在稀释会改变这笔持仓的风险收益结构");
+    expect(payload.text).toContain("SEC 文件：发行人提交了融资披露");
     expect(payload.text).not.toContain("manual_review");
+    expect(payload.text).not.toContain("bearish");
+    expect(payload.text).not.toContain("[HIGH]");
     expect(payload.text).not.toContain("gmail_app_password");
   });
 
@@ -42,8 +50,8 @@ function candidate(): CandidateEvent {
       eventId: "event-1",
       source: "sec",
       matchedTickers: ["SNDK"],
-      title: "Convertible financing",
-      summary: "Convertible senior notes filing.",
+      title: "可转债融资披露",
+      summary: "公司提交可转债融资文件。",
       url: "https://example.com/filing",
       publishedAt: "2026-05-23T00:00:00.000Z",
       detectedAt: "2026-05-23T00:01:00.000Z",
@@ -59,10 +67,10 @@ function candidate(): CandidateEvent {
     }],
     rules: [{
       ruleId: "bearish.convertible",
-      label: "Convertible financing",
+      label: "可转债融资",
       severity: "HIGH",
       directionHint: "bearish",
-      reason: "Possible dilution",
+      reason: "可能带来稀释压力",
       confidence: 0.9
     }],
     highestRuleSeverity: "HIGH",
@@ -78,13 +86,13 @@ function analysis(): CodexAnalysisResult {
     severity: "HIGH",
     confidence: 0.83,
     should_email: true,
-    one_sentence_summary: "Convertible financing may pressure the position.",
-    why_it_matters: "Potential dilution can change the risk profile.",
-    portfolio_impact: "Position needs manual review.",
+    one_sentence_summary: "可转债融资可能带来稀释压力。",
+    why_it_matters: "潜在稀释会改变这笔持仓的风险收益结构。",
+    portfolio_impact: "当前持仓需要人工复核融资规模、转股价和资金用途。",
     suggested_action: "manual_review",
     evidence: [{
       source: "sec",
-      claim: "Issuer filed financing disclosure.",
+      claim: "发行人提交了融资披露。",
       url: "https://example.com/filing"
     }],
     missing_data: []
